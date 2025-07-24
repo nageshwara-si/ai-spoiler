@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Strategic Risks of AI in Software Development</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals & Subtle Blue -->
+    <!-- Application Structure Plan: A thematic, single-page dashboard application. The structure guides the user from understanding the initial "trap" of AI-driven coding to exploring the tangible "costs" (technical, security, quality), the "human fallout" (skill erosion), and finally, the "strategic imperative" and actionable "recommendations." This non-linear, sectioned approach with sticky navigation was chosen over a linear document format to allow users to explore areas of interest freely, making the dense information more accessible and engaging. Key interactions like chart clicks and accordions encourage active exploration rather than passive reading. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Security vulnerabilities data (40% SQL injection). Goal: Compare/Inform. Viz: Chart.js Donut Chart. Interaction: Clicks on segments update a description panel, providing details on each vulnerability type. Justification: A donut chart is excellent for showing proportions of a whole, making the 40% stat immediately impactful. The interaction adds layers of information without cluttering the UI. Library: Chart.js (Canvas).
+        - Report Info: Concepts like "Vibe Coding", "Digital Archaeology", "Mentorship Breakdown". Goal: Organize/Inform. Viz: Styled HTML/CSS cards and diagrams. Interaction: Hover effects and structured layout. Justification: For abstract concepts, clean visual organization with HTML/Tailwind is clearer and more maintainable than complex graphics. It adheres to the NO SVG rule while effectively communicating the ideas. Method: HTML/Tailwind.
+        - Report Info: Actionable recommendations. Goal: Inform/Organize. Viz: Accordion component. Interaction: Clicking to expand/collapse. Justification: An accordion presents a large amount of structured information in a compact, user-controlled manner, preventing overwhelming the user. Method: HTML/JS.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F5F5F4; /* Warm Neutral: Stone 100 */
+            color: #374151; /* Cool Gray 700 */
+        }
+        .nav-link {
+            transition: color 0.3s, border-color 0.3s;
+        }
+        .nav-link.active, .nav-link:hover {
+            color: #3B82F6; /* Blue 500 */
+            border-bottom-color: #3B82F6;
+        }
+        .card {
+            background-color: #FFFFFF;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.1);
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 640px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <h1 class="text-xl font-bold text-gray-800">AI Code Generation: A Strategic Risk Analysis</h1>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#trap" class="nav-link px-3 py-2 text-sm font-medium text-gray-500 border-b-2 border-transparent">The Trap</a>
+                        <a href="#costs" class="nav-link px-3 py-2 text-sm font-medium text-gray-500 border-b-2 border-transparent">The Costs</a>
+                        <a href="#fallout" class="nav-link px-3 py-2 text-sm font-medium text-gray-500 border-b-2 border-transparent">The Fallout</a>
+                        <a href="#imperative" class="nav-link px-3 py-2 text-sm font-medium text-gray-500 border-b-2 border-transparent">The Imperative</a>
+                        <a href="#recommendations" class="nav-link px-3 py-2 text-sm font-medium text-gray-500 border-b-2 border-transparent">Recommendations</a>
+                    </div>
+                </div>
+                <div class="md:hidden">
+                    <button id="mobile-menu-button" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500">
+                        <span class="sr-only">Open main menu</span>
+                        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </nav>
+        <div id="mobile-menu" class="md:hidden hidden">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <a href="#trap" class="block nav-link px-3 py-2 rounded-md text-base font-medium text-gray-500">The Trap</a>
+                <a href="#costs" class="block nav-link px-3 py-2 rounded-md text-base font-medium text-gray-500">The Costs</a>
+                <a href="#fallout" class="block nav-link px-3 py-2 rounded-md text-base font-medium text-gray-500">The Fallout</a>
+                <a href="#imperative" class="block nav-link px-3 py-2 rounded-md text-base font-medium text-gray-500">The Imperative</a>
+                <a href="#recommendations" class="block nav-link px-3 py-2 rounded-md text-base font-medium text-gray-500">Recommendations</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+
+        <section id="trap" class="mb-16 scroll-mt-16">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">The "Vibe Coding" Trap</h2>
+                <p class="mt-4 max-w-3xl mx-auto text-lg text-gray-600">This section explores the deceptive allure of "vibe coding"—developing with AI without deep understanding. While it promises speed, it often leads to a cycle of dependency and bypasses the critical learning process essential for true engineering competence.</p>
+            </div>
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div class="card p-8">
+                    <h3 class="text-2xl font-semibold text-blue-600">The Promise: Effortless Creation</h3>
+                    <p class="mt-4 text-gray-600">The appeal is undeniable: build applications simply by describing a vision in plain English. This approach promises to democratize development, allowing anyone to create software without technical knowledge, focusing only on the "vibe" until it "feels right."</p>
+                </div>
+                <div class="card p-8 border-2 border-red-300 bg-red-50">
+                    <h3 class="text-2xl font-semibold text-red-600">The Reality: A New Tutorial Hell</h3>
+                    <p class="mt-4 text-gray-600">In practice, this becomes a trap. Developers become dependent on AI for every challenge, unable to debug, maintain, or evolve the code. It commoditizes output while devaluing the critical thinking, problem-solving, and architectural skills that define a robust product and a capable engineer.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="costs" class="mb-16 scroll-mt-16">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">The Hidden Costs: A Dashboard of Risk</h2>
+                 <p class="mt-4 max-w-3xl mx-auto text-lg text-gray-600">This dashboard highlights the tangible, long-term costs of unverified AI-generated code. From compounding technical debt to critical security flaws, these issues can undermine a product's foundation. Interact with the chart to learn more about specific security threats.</p>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="card p-6 lg:col-span-2">
+                    <h3 class="text-xl font-semibold text-center mb-4">Security Vulnerabilities in AI Code</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                        <div class="chart-container">
+                            <canvas id="securityChart"></canvas>
+                        </div>
+                        <div>
+                            <div id="security-info" class="p-4 bg-gray-50 rounded-lg min-h-[150px]">
+                                <h4 id="security-title" class="font-bold text-lg text-gray-800">Click a segment to learn more</h4>
+                                <p id="security-desc" class="mt-2 text-gray-600">AI models don't think like attackers. This "adversarial thinking gap" leads to common but critical vulnerabilities that can expose your product to significant business, legal, and reputational risk.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-semibold mb-2">Technical Debt</h3>
+                    <p class="text-gray-600">AI-generated code is often verbose, poorly structured, and lacks proper documentation. This creates a "digital archaeology problem," where future developers spend more time deciphering and fixing code than building new features, leading to massive, unmanageable technical debt.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-semibold mb-2">Code Quality & Maintainability</h3>
+                    <p class="text-gray-600">Generated code frequently overlooks error handling, edge cases, and performance optimizations. Without human oversight, the result is brittle, inefficient software that is nearly impossible to maintain or evolve, turning a key asset into a liability.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="fallout" class="mb-16 scroll-mt-16">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">The Human Fallout</h2>
+                <p class="mt-4 max-w-3xl mx-auto text-lg text-gray-600">Beyond the code itself, an over-reliance on AI has profound consequences for developer skills and team health. This section visualizes the erosion of core competencies and the breakdown of essential mentorship models, which are vital for a company's long-term innovation capacity.</p>
+            </div>
+            <h3 class="text-2xl font-semibold text-center mb-8">Erosion of Core Development Capabilities</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                <div class="card p-4">
+                    <span class="text-3xl">🐞</span>
+                    <h4 class="font-semibold mt-2">Debugging</h4>
+                    <p class="text-sm text-gray-500">Skills atrophy when developers can't fix what AI breaks.</p>
+                </div>
+                <div class="card p-4">
+                     <span class="text-3xl">🏗️</span>
+                    <h4 class="font-semibold mt-2">Architecture</h4>
+                    <p class="text-sm text-gray-500">Informed design decisions become impossible without fundamentals.</p>
+                </div>
+                <div class="card p-4">
+                     <span class="text-3xl">🧐</span>
+                    <h4 class="font-semibold mt-2">Code Review</h4>
+                    <p class="text-sm text-gray-500">Quality and security cannot be assessed without comprehension.</p>
+                </div>
+                <div class="card p-4">
+                     <span class="text-3xl">📚</span>
+                    <h4 class="font-semibold mt-2">Fundamental Knowledge</h4>
+                    <p class="text-sm text-gray-500">Adaptability to new tech is lost, hindering innovation.</p>
+                </div>
+            </div>
+            <div class="card p-8 mt-12">
+                <h3 class="text-2xl font-semibold text-center mb-6">The Breakdown of Mentorship & The "Recursive Training Problem"</h3>
+                <div class="flex flex-col md:flex-row items-center justify-center gap-4 text-center">
+                    <div class="p-4 rounded-lg bg-blue-100 text-blue-800">
+                        <p class="font-bold">Senior Developer</p>
+                        <p class="text-sm">Uses AI for speed</p>
+                    </div>
+                    <div class="text-2xl font-mono text-red-500 p-2">&ne; Mentorship &rarr;</div>
+                    <div class="p-4 rounded-lg bg-yellow-100 text-yellow-800">
+                        <p class="font-bold">Junior Developer</p>
+                        <p class="text-sm">Learns from AI, not experts</p>
+                    </div>
+                    <div class="text-2xl font-mono text-red-500 p-2">&rarr;</div>
+                    <div class="p-4 rounded-lg bg-red-100 text-red-800">
+                        <p class="font-bold">Future AI Models</p>
+                        <p class="text-sm">Trained on lower-quality, AI-influenced code</p>
+                    </div>
+                </div>
+                <p class="text-center mt-6 text-gray-600">This cycle jeopardizes the future talent pipeline and risks a long-term degradation in the quality of both human-written and AI-generated code.</p>
+            </div>
+        </section>
+
+        <section id="imperative" class="mb-16 scroll-mt-16 bg-white rounded-lg p-8 shadow-lg">
+            <div class="text-center">
+                <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">The Strategic Imperative</h2>
+                <p class="mt-4 max-w-3xl mx-auto text-lg text-gray-600">For a product company, deep code understanding is not optional—it's the bedrock of innovation, security, and competitive advantage. This section outlines why human expertise and code ownership are non-negotiable assets for long-term viability.</p>
+            </div>
+            <div class="mt-10 grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-gray-50 p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold text-gray-800">Code Ownership as an Asset</h3>
+                    <p class="mt-3 text-gray-600">Human mastery of the codebase is the ultimate arbiter of quality, performance, and security. It preserves institutional memory and ensures strategic agility, allowing teams to innovate, pivot, and respond to market changes effectively. This is a competitive advantage AI cannot replicate.</p>
+                </div>
+                <div class="bg-gray-50 p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold text-gray-800">The Human Advantage</h3>
+                    <p class="mt-3 text-gray-600">Only human developers possess the critical thinking, contextual understanding, and adversarial reasoning needed to build truly robust and secure products. Empowering this ingenuity with intelligent tools—not replacing it—is the key to sustainable success.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="recommendations" class="scroll-mt-16">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Actionable Recommendations</h2>
+                <p class="mt-4 max-w-3xl mx-auto text-lg text-gray-600">To harness AI's benefits while mitigating its risks, a balanced and responsible strategy is essential. This section provides five key recommendations for integrating AI thoughtfully into your development lifecycle, ensuring it serves as a powerful tool that augments, rather than replaces, human expertise.</p>
+            </div>
+            <div id="accordion-container" class="space-y-4 max-w-4xl mx-auto">
+                <div class="accordion-item card overflow-hidden">
+                    <button class="accordion-header w-full flex justify-between items-center text-left p-6">
+                        <span class="text-xl font-semibold text-gray-800">1. AI as an Augmentation Tool</span>
+                        <span class="accordion-icon text-2xl text-blue-500 transform transition-transform">+</span>
+                    </button>
+                    <div class="accordion-content">
+                        <div class="p-6 pt-0">
+                            <p class="text-gray-600">View AI strictly as a tool to enhance developer productivity, not replace critical thinking. Use it to automate boilerplate, suggest completions, and handle repetitive tasks, freeing developers to focus on high-level design, complex problem-solving, and architecture.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item card overflow-hidden">
+                    <button class="accordion-header w-full flex justify-between items-center text-left p-6">
+                        <span class="text-xl font-semibold text-gray-800">2. Mandate Robust Human Code Review</span>
+                         <span class="accordion-icon text-2xl text-blue-500 transform transition-transform">+</span>
+                    </button>
+                    <div class="accordion-content">
+                        <div class="p-6 pt-0">
+                            <p class="text-gray-600">Implement mandatory, rigorous human review for all code, especially AI-generated output. This is the critical checkpoint to ensure quality, security, maintainability, and adherence to architectural standards. It is where human expertise takes ownership of the final product.</p>
+                        </div>
+                    </div>
+                </div>
+                 <div class="accordion-item card overflow-hidden">
+                    <button class="accordion-header w-full flex justify-between items-center text-left p-6">
+                        <span class="text-xl font-semibold text-gray-800">3. Prioritize Continuous Education</span>
+                         <span class="accordion-icon text-2xl text-blue-500 transform transition-transform">+</span>
+                    </button>
+                    <div class="accordion-content">
+                        <div class="p-6 pt-0">
+                            <p class="text-gray-600">Invest in ongoing training to maintain and deepen foundational skills in coding, debugging, security, and system design. This ensures your team remains capable of understanding, troubleshooting, and evolving complex systems independently.</p>
+                        </div>
+                    </div>
+                </div>
+                 <div class="accordion-item card overflow-hidden">
+                    <button class="accordion-header w-full flex justify-between items-center text-left p-6">
+                        <span class="text-xl font-semibold text-gray-800">4. Foster a Culture of Deep Mastery</span>
+                         <span class="accordion-icon text-2xl text-blue-500 transform transition-transform">+</span>
+                    </button>
+                    <div class="accordion-content">
+                        <div class="p-6 pt-0">
+                            <p class="text-gray-600">Cultivate an engineering culture that values and rewards deep technical understanding, craftsmanship, and long-term product health over superficial output or short-term velocity. This reinforces the importance of building things right.</p>
+                        </div>
+                    </div>
+                </div>
+                 <div class="accordion-item card overflow-hidden">
+                    <button class="accordion-header w-full flex justify-between items-center text-left p-6">
+                        <span class="text-xl font-semibold text-gray-800">5. Implement Strategic AI Integration</span>
+                         <span class="accordion-icon text-2xl text-blue-500 transform transition-transform">+</span>
+                    </button>
+                    <div class="accordion-content">
+                        <div class="p-6 pt-0">
+                            <p class="text-gray-600">Thoughtfully identify specific use cases where AI provides a clear benefit without introducing unacceptable risk. While AI can assist with initial generation, human oversight must remain paramount for critical design, complex logic, and all security-related aspects.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+    
+    <footer class="bg-white mt-16">
+        <div class="container mx-auto py-6 px-4 sm:px-6 lg:px-8 text-center text-gray-500">
+            <p>Interactive report based on the analysis of "Critical Imperative: Why Deep Code Understanding Remains Paramount for Product Longevity and Quality."</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const securityData = {
+                labels: ['SQL Injection', 'Improper Access Control', 'Hardcoded API Keys', 'Client-Side Checks', 'Other'],
+                datasets: [{
+                    label: 'Vulnerability Distribution',
+                    data: [40, 25, 15, 10, 10],
+                    backgroundColor: [
+                        '#EF4444', // red-500
+                        '#F97316', // orange-500
+                        '#EAB308', // yellow-500
+                        '#84CC16', // lime-500
+                        '#A8A29E'  // stone-400
+                    ],
+                    hoverBackgroundColor: [
+                        '#DC2626', // red-600
+                        '#EA580C', // orange-600
+                        '#CA8A04', // yellow-600
+                        '#65A30D', // lime-600
+                        '#78716C'  // stone-500
+                    ],
+                    borderColor: '#F5F5F4',
+                    borderWidth: 4,
+                    hoverOffset: 8
+                }]
+            };
+
+            const securityInfo = {
+                title: document.getElementById('security-title'),
+                desc: document.getElementById('security-desc'),
+                default: {
+                    title: 'Click a segment to learn more',
+                    desc: "AI models don't think like attackers. This 'adversarial thinking gap' leads to common but critical vulnerabilities that can expose your product to significant business, legal, and reputational risk."
+                },
+                details: [
+                    { title: 'SQL Injection (40%)', desc: 'AI-generated database queries can be vulnerable to injection attacks, potentially exposing your entire database to unauthorized access, modification, or deletion.' },
+                    { title: 'Improper Access Control', desc: 'Generated code may fail to properly implement file system or resource access controls, exposing sensitive files and internal services.' },
+                    { title: 'Hardcoded API Keys', desc: 'AI can inadvertently hardcode sensitive credentials like API keys directly into the source code, leading to unauthorized access to critical third-party services.' },
+                    { title: 'Client-Side Security Checks', desc: 'Security logic may be implemented on the client side instead of the server side, which is easily bypassed by attackers and offers no real protection.' },
+                    { title: 'Other Vulnerabilities', desc: 'This category includes a range of other issues like cross-site scripting (XSS), insecure deserialization, and missing rate limiting, which AI may overlook.' }
+                ]
+            };
+
+            const ctx = document.getElementById('securityChart').getContext('2d');
+            const securityChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: securityData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '60%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                font: {
+                                    size: 14
+                                }
+                            }
+                        },
+                        tooltip: {
+                            enabled: true,
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed !== null) {
+                                        label += context.parsed + '%';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    onClick: (event, elements) => {
+                        if (elements.length > 0) {
+                            const i = elements[0].index;
+                            securityInfo.title.textContent = securityInfo.details[i].title;
+                            securityInfo.desc.textContent = securityInfo.details[i].desc;
+                        }
+                    }
+                }
+            });
+            
+            document.querySelector('.chart-container').addEventListener('mouseleave', () => {
+                securityInfo.title.textContent = securityInfo.default.title;
+                securityInfo.desc.textContent = securityInfo.default.desc;
+            });
+
+            const accordionContainer = document.getElementById('accordion-container');
+            accordionContainer.addEventListener('click', function(e) {
+                const header = e.target.closest('.accordion-header');
+                if (!header) return;
+
+                const item = header.parentElement;
+                const content = header.nextElementSibling;
+                const icon = header.querySelector('.accordion-icon');
+
+                const isOpen = content.style.maxHeight && content.style.maxHeight !== '0px';
+
+                item.parentElement.querySelectorAll('.accordion-content').forEach(el => el.style.maxHeight = '0px');
+                item.parentElement.querySelectorAll('.accordion-icon').forEach(el => el.textContent = '+');
+                
+                if (!isOpen) {
+                    content.style.maxHeight = content.scrollHeight + 'px';
+                    icon.textContent = '-';
+                }
+            });
+            
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+            
+            document.querySelectorAll('#mobile-menu a').forEach(link => {
+                link.addEventListener('click', () => {
+                    mobileMenu.classList.add('hidden');
+                });
+            });
+
+            const sections = document.querySelectorAll('section[id]');
+            const navLinks = document.querySelectorAll('.nav-link');
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const id = entry.target.getAttribute('id');
+                        navLinks.forEach(link => {
+                            link.classList.remove('active');
+                            if (link.getAttribute('href') === `#${id}`) {
+                                link.classList.add('active');
+                            }
+                        });
+                    }
+                });
+            }, { rootMargin: '-50% 0px -50% 0px', threshold: 0 });
+
+            sections.forEach(section => {
+                observer.observe(section);
+            });
+        });
+    </script>
+</body>
+</html>
